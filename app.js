@@ -48,11 +48,11 @@ app.use(
   )
 );
 
+app.use("/cron", cronRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/assets", assetRoutes);
 app.use("/api/p2p", p2pRoutes);
 app.use("/api/history", historyRoutes);
-app.use("/cron", cronRoutes);
 
 app.use((error, req, res, next) => {
   if (res.headerSent) {
