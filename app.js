@@ -64,7 +64,7 @@ mongoose
   )
   .then(() => {
     app.listen(process.env.PORT || 3005);
-    cron.schedule("0 4 * * *", async () => {
+    cron.schedule("0 14 * * *", async () => {
       const summaryAssetsStats = new SummaryAssetsStats();
       await summaryAssetsStats.processHistoryData();
     });
