@@ -39,14 +39,7 @@ const unless =
       ? next()
       : middleware(req, res, next);
 
-app.use(
-  unless(
-    checkAuth,
-    "/api/users/login",
-    "/api/users/signup",
-    "/cron/processHistoryData"
-  )
-);
+app.use(unless(checkAuth, "/api/users/login", "/api/users/signup"));
 
 app.use("/cron", cronRoutes);
 app.use("/api/users", userRoutes);
