@@ -10,11 +10,6 @@ const processHistoryData = async (req, res, next) => {
     return next(error);
   }
 
-  if (!historyData) {
-    const error = new HttpError("Could not find any history data!", 404);
-    return next(error);
-  }
-
   res.json({ success: true });
 };
 
