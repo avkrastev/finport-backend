@@ -1,0 +1,39 @@
+{
+  "name": "finport",
+  "version": "1.0.0",
+  "description": "My Financial Portfolio",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avkrastev/finport.git"
+  },
+  "author": "Alexander Krastev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/avkrastev/finport/issues"
+  },
+  "homepage": "https://github.com/avkrastev/finport#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.2",
+    "coingecko-api": "^1.0.10",
+    "date-fns": "^2.29.2",
+    "express": "^4.17.3",
+    "express-validator": "^6.14.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.5.0",
+    "mongoose": ">=6.4.6",
+    "mongoose-unique-validator": "^3.0.0",
+    "node-cache": "^5.1.2",
+    "node-cron": "^3.0.2",
+    "yahoo-stock-prices": "^1.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
