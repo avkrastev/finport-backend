@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/avkrastev/finport.git"
+    "url": "git+https://github.com/avkrastev/finport-backend.git"
   },
   "author": "Alexander Krastev",
   "license": "ISC",
