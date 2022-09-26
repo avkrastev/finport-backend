@@ -5,12 +5,14 @@ module.exports = (req, res, next) => {
   if (req.method === "OPTIONS") {
     return next();
   }
+  console.log(req.path)
   if (req.path.includes("cron")) {
+    console.log(32131231)
     return next();
   }
   try {
     const token = req.headers.authorization.split(" ")[1];
-
+console.log('token', token)
     if (!token) {
       throw new Error("Authentication failed!");
     }
