@@ -67,7 +67,7 @@ const getHistoryForAWeek = async (req, res, next) => {
       },
       {
         $sort: {
-          _id: 1,
+          _id: -1,
         },
       },
       {
@@ -97,6 +97,7 @@ const getHistorySinceStart = async (req, res, next) => {
     let historyData;
     let todayData;
     let yesterdayData;
+    let historySinceStart;
 
     if (queryObject.category !== "") {
       historyData = await History.aggregate(
@@ -114,18 +115,20 @@ const getHistorySinceStart = async (req, res, next) => {
       yesterdayData = historyData[historyData.length - 2];
     }
 
-    const difference = roundNumber(todayData.balance - yesterdayData.balance);
-    const differenceInPercents =
-      todayData.balance > 0
-        ? roundNumber((difference / todayData.balance) * 100)
-        : 0;
+    if (todayData && yesterdayData) {
+      const difference = roundNumber(todayData.balance - yesterdayData.balance);
+      const differenceInPercents =
+        todayData.balance > 0
+          ? roundNumber((difference / todayData.balance) * 100)
+          : 0;
 
-    const historySinceStart = {
-      historyData,
-      difference,
-      differenceInPercents,
-      category: queryObject.category,
-    };
+      historySinceStart = {
+        historyData,
+        difference,
+        differenceInPercents,
+        category: queryObject.category,
+      };
+    }
 
     res.status(200).json({ historySinceStart });
   } catch (err) {

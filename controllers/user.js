@@ -1,8 +1,12 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
+const Asset = require("../models/asset");
+const History = require("../models/history");
+const P2P = require("../models/p2p");
 const { CATEGORIES } = require("../utils/categories");
 
 const signup = async (req, res, next) => {
@@ -167,7 +171,42 @@ const updateUser = async (req, res, next) => {
   res.json({ [req.body.key]: req.body.data });
 };
 
+const deleteUser = async (req, res, next) => {
+  let user;
+
+  try {
+    user = await User.findById(req.params.id);
+  } catch (err) {
+    const error = new HttpError(
+      "Adding new asset asset failed, try again.",
+      500
+    );
+    return next(error);
+  }
+
+  if (!user) {
+    const error = new HttpError("Could not find user with provided id.", 404);
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await User.deleteOne({ session: sess, _id: req.params.id });
+    await Asset.deleteMany({ session: sess, creator: req.params.id });
+    await History.deleteMany({ session: sess, creator: req.params.id });
+    await P2P.deleteMany({ session: sess, creator: req.params.id });
+    sess.commitTransaction();
+  } catch (err) {
+    const error = new HttpError("Something went wrong. Please try again!", 500);
+    return next(error);
+  }
+
+  res.status(200).json({ message: "Deleted asset" });
+};
+
 exports.signup = signup;
 exports.login = login;
 exports.getLoggedInUserData = getLoggedInUserData;
 exports.updateUser = updateUser;
+exports.deleteUser = deleteUser;
