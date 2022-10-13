@@ -8,8 +8,22 @@ class MiscAssetStats extends AssetStats {
     this.category = "misc";
   }
 
+  sortStats() {
+    this.stats.sort((a, b) => a["holdingValue"] - b["holdingValue"]);
+  }
+
+  getTotals() {
+    this.sums.totalSum = this.balance * -1;
+    this.sums.holdingValue = (this.sums.totalSum + this.balance);
+    this.sums.difference = (this.sums.totalSum - this.sums.holdingValue) * -1;
+    this.sums.differenceInPercents =
+      this.sums.totalSum > 0
+        ? (this.sums.holdingValue / this.sums.totalSum - 1) * 100
+        : 0;
+  }
+
   async getAllData() {
-    this.getStatsWithoutCurrentPrices();
+    await this.getStatsWithoutCurrentPrices();
     this.getTotals();
 
     return {

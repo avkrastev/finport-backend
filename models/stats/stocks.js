@@ -26,7 +26,9 @@ class StocksAssetStats extends AssetStats {
       stats.name = item._id.name;
       stats.symbol = item._id.symbol;
       stats.totalSum = item.totalSum;
+      stats.currency = this.findCurrency(item.data);
       stats.holdingQuantity = item.totalQuantity;
+      stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
       if (this.currentPrices[stats.symbol].currency !== "USD") {
         stats.currentPrice =
           this.exchangeRatesList[this.currentPrices[stats.symbol].currency] *
@@ -59,7 +61,7 @@ class StocksAssetStats extends AssetStats {
       await this.getPrices();
       this.getStats();
     } else {
-      this.getStatsWithoutCurrentPrices()
+      await this.getStatsWithoutCurrentPrices()
     }
 
     this.getTotals();

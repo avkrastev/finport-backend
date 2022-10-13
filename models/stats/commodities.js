@@ -9,7 +9,7 @@ class CommoditiesAssetStats extends AssetStats {
   }
 
   async getAllData() {
-    this.getStatsWithoutCurrentPrices();
+    await this.getStatsWithoutCurrentPrices();
     this.getTotals();
 
     return {

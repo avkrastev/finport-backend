@@ -25,9 +25,9 @@ class ETFAssetStats extends AssetStats {
     if (userData.stocks_api_key) {
       this.apiKey = userData.stocks_api_key;
       await this.getPrices();
-      this.getStats();
+      await this.getStats();
     } else {
-      this.getStatsWithoutCurrentPrices();
+      await this.getStatsWithoutCurrentPrices();
     }
     this.getTotals();
     return {

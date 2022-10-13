@@ -103,9 +103,10 @@ const getHistorySinceStart = async (req, res, next) => {
       historyData = await History.aggregate(
         dataBuilder.getHistoryDataPerCategory()
       ).exec();
-
       todayData = historyData[historyData.length - 1].categories[0];
-      yesterdayData = historyData[historyData.length - 2].categories[0];
+      yesterdayData =
+        historyData[historyData.length - 2] &&
+        historyData[historyData.length - 2].categories[0];
     } else {
       historyData = await History.aggregate(
         dataBuilder.getHistoryDataSummary()

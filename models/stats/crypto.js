@@ -24,8 +24,10 @@ class CryptoAssetStats extends AssetStats {
       stats.name = item._id.name;
       stats.symbol = item._id.symbol;
       stats.assetId = item._id.assetId;
+      stats.currency = this.findCurrency(item.data);
       stats.totalSum = item.totalSum;
       stats.holdingQuantity = item.totalQuantity;
+      stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
       stats.currentPrice = this.currentPrices[stats.assetId].usd;
       stats.holdingValue =
         this.currentPrices[stats.assetId].usd * stats.holdingQuantity;

@@ -6,8 +6,9 @@ const Asset = require("../asset");
 const { addHistory } = require("../../controllers/history");
 const fns = require("date-fns");
 const P2PAssetStats = require("./p2p");
+const AssetStats = require("./asset");
 
-class SummaryAssetsStats {
+class SummaryAssetsStats extends AssetStats {
   async processHistoryData() {
     const dataBuilder = new DataBuilder();
     const assetsPerUserAndCategory = await Asset.aggregate(
@@ -56,7 +57,7 @@ class SummaryAssetsStats {
 
     for (let user in groupedByUserAndCategory) {
       for (let category in groupedByUserAndCategory[user]) {
-        const totalInvested = groupedByUserAndCategory[user][category].reduce(
+        let totalInvested = groupedByUserAndCategory[user][category].reduce(
           (total, record) => {
             return total + record.totalSum;
           },
@@ -100,25 +101,51 @@ class SummaryAssetsStats {
           balance = p2pProfitStats.sums.holdingValue;
         }
 
+        if (category === "misc") {
+          for (let item of groupedByUserAndCategory[user][category]) {
+            item["currency"] = this.findCurrency(item.currencies);
+          }
+          totalInvested = groupedByUserAndCategory[user][category].reduce(
+            (total, record) => {
+              const totalSum =
+                record.currency === "USD"
+                  ? record.totalSum
+                  : record.totalSumInOriginalCurrency *
+                    exchangeRatesList[record["currency"]];
+              return total + totalSum;
+            },
+            0
+          );
+          balance = 0;
+          for (let item of groupedByUserAndCategory[user][category]) {
+            balance +=
+              totalInvested - item["currency"] === "USD"
+                ? item.totalSum
+                : item.totalSumInOriginalCurrency *
+                  exchangeRatesList[item["currency"]];
+          }
+          balance -= totalInvested;
+        }
+
         groupedByUserAndCategory[user][category].push({
           totalInvested,
           balance,
         });
 
-        try {
-          await addHistory(
-            {
-              date: fns.format(new Date(), "yyyy-MM-dd"),
-              category,
-              balance,
-              total: totalInvested,
-            },
-            user
-          );
-        } catch (err) {
-          console.log(err);
-          new HttpError("Error storing history data!", 500);
-        }
+        // try {
+        //   await addHistory(
+        //     {
+        //       date: fns.format(new Date(), "yyyy-MM-dd"),
+        //       category,
+        //       balance,
+        //       total: totalInvested,
+        //     },
+        //     user
+        //   );
+        // } catch (err) {
+        //   console.log(err);
+        //   new HttpError("Error storing history data!", 500);
+        // }
       }
     }
 

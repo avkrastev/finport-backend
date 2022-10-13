@@ -6,6 +6,7 @@ const {
   monthDiffFromToday,
   compoundInterest,
   sumsInSupportedCurrencies,
+  exchangeRatesBaseUSD,
 } = require("../../utils/functions");
 
 class P2PAssetStats extends AssetStats {
@@ -19,7 +20,9 @@ class P2PAssetStats extends AssetStats {
     this.totalInterestPaid = totalInterestPaid;
   }
 
-  getStats() {
+  async getStats() {
+    const exchangeRatesList = await exchangeRatesBaseUSD(0, "", "", true);
+
     for (let item of this.data) {
       const interestsPaid = this.totalInterestPaid.find(
         (platform) => platform.name === item._id.name
@@ -28,7 +31,7 @@ class P2PAssetStats extends AssetStats {
       stats.name = item._id.name;
       stats.symbol = item._id.symbol;
       stats.assetId = item._id.assetId;
-      stats.currency = item._id.currency;
+      stats.currency = this.findCurrency(item.data);
       stats.totalSum = item.totalSum;
       stats.totalSumInOriginalCurrency =
         item.totalSumInOriginalCurrency + interestsPaid.interest;
@@ -41,7 +44,10 @@ class P2PAssetStats extends AssetStats {
       stats.differenceInPercents =
         (interestsPaid.interest / interestsPaid.totalInvested) * 100;
       stats.totalInvested = interestsPaid.totalInvested;
-
+      stats.differenceInUSD =
+        stats.currency !== "USD"
+          ? stats.difference * exchangeRatesList[stats.currency]
+          : "";
       this.balance += stats.holdingValue;
 
       this.stats.push(stats);
@@ -139,7 +145,7 @@ class P2PAssetStats extends AssetStats {
   }
 
   async getAllData() {
-    this.getStats();
+    await this.getStats();
     this.getTotals();
 
     return {
