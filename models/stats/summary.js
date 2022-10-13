@@ -132,20 +132,20 @@ class SummaryAssetsStats extends AssetStats {
           balance,
         });
 
-        // try {
-        //   await addHistory(
-        //     {
-        //       date: fns.format(new Date(), "yyyy-MM-dd"),
-        //       category,
-        //       balance,
-        //       total: totalInvested,
-        //     },
-        //     user
-        //   );
-        // } catch (err) {
-        //   console.log(err);
-        //   new HttpError("Error storing history data!", 500);
-        // }
+        try {
+          await addHistory(
+            {
+              date: fns.format(new Date(), "yyyy-MM-dd"),
+              category,
+              balance,
+              total: totalInvested,
+            },
+            user
+          );
+        } catch (err) {
+          console.log(err);
+          new HttpError("Error storing history data!", 500);
+        }
       }
     }
 
