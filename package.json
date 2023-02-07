@@ -22,6 +22,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.2",
     "coingecko-api": "^1.0.10",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "date-fns": "^2.29.2",
     "express": "^4.17.3",
