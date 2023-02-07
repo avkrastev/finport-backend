@@ -8,6 +8,10 @@ const Asset = require("../models/asset");
 const History = require("../models/history");
 const P2P = require("../models/p2p");
 const { CATEGORIES } = require("../utils/categories");
+const sendEmail = require("../utils/email-sender");
+const path = require("path");
+const fs = require("fs");
+const handlebars = require("handlebars");
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -27,10 +31,7 @@ const signup = async (req, res, next) => {
   }
 
   if (existingUser) {
-    const error = new HttpError(
-      "Could not create user, email already exists.",
-      500
-    );
+    const error = new HttpError("Could not create user, email already exists.", 500);
     return next(error);
   }
 
@@ -60,11 +61,9 @@ const signup = async (req, res, next) => {
 
   let token;
   try {
-    token = jwt.sign(
-      { userId: newUser.id, email: newUser.email },
-      process.env.JWT_KEY,
-      { expiresIn: "12h" }
-    );
+    token = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.JWT_KEY, {
+      expiresIn: "12h",
+    });
   } catch (err) {
     const error = new HttpError("Adding new user failed, try again.", 500);
     return next(error);
@@ -75,6 +74,10 @@ const signup = async (req, res, next) => {
       ([key]) => !["password", "id", "__v", "_id"].includes(key)
     )
   );
+
+  const htmlToSend = prepareVerificationEmail(newUser, "verify");
+
+  await sendEmail(newUser.email, "Email Verification", htmlToSend);
 
   res.status(201).json({
     userId: newUser.id,
@@ -115,11 +118,9 @@ const login = async (req, res, next) => {
 
   let token;
   try {
-    token = jwt.sign(
-      { userId: existingUser.id, email: existingUser.email },
-      process.env.JWT_KEY,
-      { expiresIn: "12h" }
-    );
+    token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, process.env.JWT_KEY, {
+      expiresIn: "12h",
+    });
   } catch (err) {
     const error = new HttpError("Logging in failed, try again.", 500);
     return next(error);
@@ -156,10 +157,8 @@ const getLoggedInUserData = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
-  let existingUser;
-
   try {
-    existingUser = await User.findOneAndUpdate(
+    await User.findOneAndUpdate(
       { _id: req.userData.userId },
       { $set: { [req.body.key]: req.body.data } }
     );
@@ -177,10 +176,7 @@ const deleteUser = async (req, res, next) => {
   try {
     user = await User.findById(req.params.id);
   } catch (err) {
-    const error = new HttpError(
-      "Adding new asset asset failed, try again.",
-      500
-    );
+    const error = new HttpError("ser not found, try again.", 500);
     return next(error);
   }
 
@@ -205,8 +201,162 @@ const deleteUser = async (req, res, next) => {
   res.status(200).json({ message: "Deleted asset" });
 };
 
+const verifyMail = async (req, res, next) => {
+  const token = req.query.id;
+
+  if (token) {
+    try {
+      jwt.verify(token, process.env.JWT_MAIL_KEY, async (e, decoded) => {
+        if (e) {
+          console.log(e);
+
+          return res
+            .status(202)
+            .json({ message: "The link has expired! Please, resend the verification e-mail!" });
+        } else {
+          id = decoded.id;
+          try {
+            existingUser = await User.findOneAndUpdate(
+              { _id: id },
+              { $set: { email_verified: true } }
+            );
+            return res
+              .status(200)
+              .json({ message: "You have successfully verified your e-mail! Thank you!" });
+          } catch (err) {
+            return res
+              .status(500)
+              .json({ message: "An error ocurred! Please, resend the verification e-mail!" });
+          }
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(403)
+        .json({ message: "An error ocurred! Please, resend the verification e-mail!" });
+    }
+  } else {
+    return res
+      .status(403)
+      .json({ message: "An error ocurred! Please, resend the verification e-mail!" });
+  }
+};
+
+const sendVerificationEmail = async (req, res, next) => {
+  let user;
+
+  try {
+    user = await User.findById(req.userData.userId);
+  } catch (err) {
+    const error = new HttpError("User not found, try again.", 500);
+    return next(error);
+  }
+
+  const htmlToSend = prepareVerificationEmail(user, "verify");
+
+  await sendEmail(user.email, "Email Verification", htmlToSend);
+
+  res.status(200).json({ message: "Mail sent!" });
+};
+
+const prepareVerificationEmail = (userData, type) => {
+  const filePath = path.join(__dirname, `../templates/${type}.html`);
+  const source = fs.readFileSync(filePath, "utf-8").toString();
+  const template = handlebars.compile(source);
+
+  const token = jwt.sign(
+    {
+      id: userData._id,
+      created: new Date().toString(),
+    },
+    process.env.JWT_MAIL_KEY,
+    { expiresIn: "1h" }
+  );
+
+  const replacements = {
+    username: userData.name,
+    url: process.env.PUBLIC_URL + type + "?id=" + token,
+    year: new Date().getFullYear(),
+  };
+
+  return template(replacements);
+};
+
+const setResetPasswordLink = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (user) {
+      const htmlToSend = prepareVerificationEmail(user, "reset-password");
+
+      await sendEmail(user.email, "Password Reset", htmlToSend);
+
+      res.status(200).json({ message: "Mail sent!" });
+    } else {
+      return res.status(400).json({
+        message: "Email Address is invalid",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("Server problem, try again.", 500);
+    return next(error);
+  }
+};
+
+const changePassword = async (req, res, next) => {
+  const token = req.body.id;
+  if (token) {
+    try {
+      jwt.verify(token, process.env.JWT_MAIL_KEY, async (e, decoded) => {
+        if (e) {
+          console.log(e);
+
+          return res
+            .status(202)
+            .json({ message: "The link has expired! Please, start the process again!" });
+        } else {
+          id = decoded.id;
+          try {
+            let hashedPassword;
+            try {
+              hashedPassword = await bcrypt.hash(req.body.password, 12);
+            } catch (err) {
+              const error = new HttpError("Change password failed, try again.", 500);
+              return next(error);
+            }
+
+            existingUser = await User.findOneAndUpdate(
+              { _id: id },
+              { $set: { password: hashedPassword } }
+            );
+            return res
+              .status(200)
+              .json({ message: "You have successfully changed your password!" });
+          } catch (err) {
+            return res
+              .status(500)
+              .json({ message: "An error ocurred! Please, start the process again!" });
+          }
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(403)
+        .json({ message: "An error ocurred! Please, start the process again!" });
+    }
+  } else {
+    return res.status(403).json({ message: "An error ocurred! Please, start the process again!" });
+  }
+};
+
 exports.signup = signup;
 exports.login = login;
 exports.getLoggedInUserData = getLoggedInUserData;
 exports.updateUser = updateUser;
 exports.deleteUser = deleteUser;
+exports.verifyMail = verifyMail;
+exports.sendVerificationEmail = sendVerificationEmail;
+exports.setResetPasswordLink = setResetPasswordLink;
+exports.changePassword = changePassword;

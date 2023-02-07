@@ -251,10 +251,10 @@ const getAssetsSummary = async (req, res, next) => {
     for (let asset of statsResults) {
       let formattedSummary = {};
       const category = CATEGORIES.find(
-        (category) => category.alias === asset._id.category
+        (category) => category.key === asset._id.category
       );
-      formattedSummary.name = category.name;
-      formattedSummary.alias = category.alias;
+      formattedSummary.name = category.value;
+      formattedSummary.alias = category.key;
       formattedSummary.holdingValue = asset.totalSum;
       sumsSummary.push(formattedSummary);
     }

@@ -11,6 +11,7 @@ const userSchema = new Schema({
   image: { type: String, required: false },
   stocks_api_key: { type: String, required: false },
   currency: { type: String, required: false },
+  language: { type: String, required: false },
   categories: { type: Array },
   assets: [{ type: mongoose.Types.ObjectId, required: true, ref: "Asset" }],
   p2p: [{ type: mongoose.Types.ObjectId, required: true, ref: "P2p" }],

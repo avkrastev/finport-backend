@@ -25,21 +25,25 @@ app.use((req, res, next) => {
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PATCH, DELETE, OPTIONS"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   next();
 });
 
 const unless =
   (middleware, ...paths) =>
   (req, res, next) =>
-    paths.some((path) => path === req.path)
-      ? next()
-      : middleware(req, res, next);
+    paths.some((path) => path === req.path) ? next() : middleware(req, res, next);
 
-app.use(unless(checkAuth, "/api/users/login", "/api/users/signup"));
+app.use(
+  unless(
+    checkAuth,
+    "/api/users/login",
+    "/api/users/signup",
+    "/api/users/verify",
+    "/api/users/reset",
+    "/api/users/changePassword"
+  )
+);
 
 app.use("/cron", cronRoutes);
 app.use("/api/users", userRoutes);

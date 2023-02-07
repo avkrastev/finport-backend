@@ -6,6 +6,10 @@ const {
   getLoggedInUserData,
   updateUser,
   deleteUser,
+  verifyMail,
+  sendVerificationEmail,
+  setResetPasswordLink,
+  changePassword
 } = require("../controllers/user");
 
 const router = express.Router();
@@ -36,6 +40,22 @@ router.patch("/", (req, res, next) => {
 
 router.delete("/:id", (req, res, next) => {
   deleteUser(req, res, next);
+});
+
+router.get("/verify", (req, res, next) => {
+  verifyMail(req, res, next);
+});
+
+router.post("/sendVerificationEmail", (req, res, next) => {
+  sendVerificationEmail(req, res, next);
+});
+
+router.post("/reset", (req, res, next) => {
+  setResetPasswordLink(req, res, next);
+});
+
+router.post("/changePassword", (req, res, next) => {
+  changePassword(req, res, next);
 });
 
 module.exports = router;
