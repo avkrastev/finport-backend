@@ -285,9 +285,9 @@ const prepareVerificationEmail = (userData, type) => {
 
 const setResetPasswordLink = async (req, res, next) => {
   console.log(req.body)
-  console.log(process.env)
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.find({ email: req.body.email });
+    console.log(user)
     if (user) {
       const htmlToSend = prepareVerificationEmail(user, "reset-password");
 
