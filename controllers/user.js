@@ -262,7 +262,6 @@ const sendVerificationEmail = async (req, res, next) => {
 
 const prepareVerificationEmail = (userData, type) => {
   const filePath = path.join(__dirname, `../templates/${type}.html`);
-  
   const source = fs.readFileSync(filePath, "utf-8").toString();
   const template = handlebars.compile(source);
 
@@ -280,14 +279,14 @@ const prepareVerificationEmail = (userData, type) => {
     url: process.env.PUBLIC_URL + type + "?id=" + token,
     year: new Date().getFullYear(),
   };
-  console.log('replacements', replacements)
+
   return template(replacements);
 };
 
 const setResetPasswordLink = async (req, res, next) => {
   console.log(req.body)
   try {
-    const user = await User.find({ email: req.body.email });
+    const user = await User.findOn({ email: req.body.email });
     if (user) {
       const htmlToSend = prepareVerificationEmail(user, "reset-password");
 
