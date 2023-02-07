@@ -11,6 +11,8 @@ const cronRoutes = require("./routes/cron");
 const checkAuth = require("./middleware/auth");
 const cacheProvider = require("./utils/cache-provider");
 
+const cors = require("cors");
+
 const app = express();
 
 cacheProvider.start(function (err) {
@@ -19,18 +21,28 @@ cacheProvider.start(function (err) {
 
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://zany-erin-yak-hem.cyclic.app, http://localhost, https://finport.telesto.dev"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization"
-  );
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization"
+//   );
+//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+//   next();
+// });
+
+const whitelist = ["https://finport.telesto.dev/", "http://localhost"];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+
+app.use(cors(corsOptions));
 
 const unless =
   (middleware, ...paths) =>
