@@ -22,8 +22,7 @@ app.use(bodyParser.json());
 app.use((req, res, next) => {
   const allowedOrigins = [
     "https://finport.telesto.dev",
-    "http://localhost",
-    "https://zany-erin-yak-hem.cyclic.app",
+    "http://localhost:3006",
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
