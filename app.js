@@ -45,6 +45,7 @@ app.use(
     "/api/users/signup",
     "/api/users/verify",
     "/api/users/reset",
+    "/api/users/sendVerificationEmail",
     "/api/users/changePassword"
   )
 );
