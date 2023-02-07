@@ -288,9 +288,9 @@ const setResetPasswordLink = async (req, res, next) => {
   try {
     const user = await User.find({ email: req.body.email });
     if (user) {
-      const htmlToSend = prepareVerificationEmail(user, "reset-password");
+      // const htmlToSend = prepareVerificationEmail(user, "reset-password");
 
-      await sendEmail(user.email, "Password Reset", htmlToSend);
+      // await sendEmail(user.email, "Password Reset", htmlToSend);
 
       res.status(200).json({ message: "Mail sent!" });
     } else {
