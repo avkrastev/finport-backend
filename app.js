@@ -20,7 +20,16 @@ cacheProvider.start(function (err) {
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://finport.telesto.dev/");
+  const allowedOrigins = [
+    "https://finport.telesto.dev/",
+    "http://localhost",
+    "https://zany-erin-yak-hem.cyclic.app",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  //res.setHeader("Access-Control-Allow-Origin", "https://finport.telesto.dev/");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization"
