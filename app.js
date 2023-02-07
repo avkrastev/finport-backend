@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
-    "https://zany-erin-yak-hem.cyclic.app, http://localhost"
+    "https://zany-erin-yak-hem.cyclic.app, http://localhost, https://finport.telesto.dev"
   );
   res.setHeader(
     "Access-Control-Allow-Headers",
