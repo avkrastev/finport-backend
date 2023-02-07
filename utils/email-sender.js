@@ -7,13 +7,13 @@ const sendEmail = async (email, subject, html) => {
       port: 465,
       secure: true, // use SSL
       auth: {
-        user: "finport@telesto.dev",
-        pass: "str!peH8er",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
 
     const mailConfigurations = {
-      from: "finport@telesto.dev",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: subject,
       html: html
