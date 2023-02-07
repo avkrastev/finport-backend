@@ -289,7 +289,7 @@ const setResetPasswordLink = async (req, res, next) => {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
       const htmlToSend = prepareVerificationEmail(user, "reset-password");
-
+      console.log(user)
       await sendEmail(user.email, "Password Reset", htmlToSend);
 
       res.status(200).json({ message: "Mail sent!" });
