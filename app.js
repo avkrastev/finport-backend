@@ -23,6 +23,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     "https://finport.telesto.dev",
     "http://localhost:3006",
+    "https://zany-erin-yak-hem.cyclic.app",
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -31,7 +32,7 @@ app.use((req, res, next) => {
 
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, Authorization"
+    "Origin, X-Requested-With, Content-Type, Accept, x-client-key, x-client-token, x-client-secret, x-cyclic, Authorization"
   );
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   next();
