@@ -211,7 +211,7 @@ const verifyMail = async (req, res, next) => {
           console.log(e);
 
           return res
-            .status(202)
+            .status(400)
             .json({ message: "The link has expired! Please, resend the verification e-mail!" });
         } else {
           id = decoded.id;
@@ -294,7 +294,7 @@ const setResetPasswordLink = async (req, res, next) => {
       res.status(200).json({ message: "Mail sent!" });
     } else {
       return res.status(400).json({
-        message: "Email Address is invalid",
+        message: "The e-mail address is either invalid or does not exist!",
       });
     }
   } catch (err) {
@@ -313,7 +313,7 @@ const changePassword = async (req, res, next) => {
           console.log(e);
 
           return res
-            .status(202)
+            .status(400)
             .json({ message: "The link has expired! Please, start the process again!" });
         } else {
           id = decoded.id;
