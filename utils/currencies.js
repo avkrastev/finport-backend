@@ -14,6 +14,21 @@ const CURRENCIES = [
     label: "лв.",
     left: false,
   },
+  {
+    value: "GBP",
+    label: "£",
+    left: true,
+  },
+  {
+    value: "CHF",
+    label: "CHF",
+    left: true,
+  },
+  {
+    value: "CAD",
+    label: "CAD",
+    left: true,
+  },
 ];
 
 exports.CURRENCIES = CURRENCIES;

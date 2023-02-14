@@ -10,21 +10,15 @@ class Prices {
 
   loadFromCache() {
     let currentPrices = [];
-    if (
-      cacheProvider.instance().has(this.category + "_prices_" + this.creator)
-    ) {
-      currentPrices = cacheProvider
-        .instance()
-        .get(this.category + "_prices_" + this.creator);
+    if (cacheProvider.instance().has(this.category + "_prices_" + this.creator)) {
+      currentPrices = cacheProvider.instance().get(this.category + "_prices_" + this.creator);
     }
 
     return currentPrices;
   }
 
   storeInCache(data, ttl) {
-    cacheProvider
-      .instance()
-      .set(this.category + "_prices_" + this.creator, data, ttl);
+    cacheProvider.instance().set(this.category + "_prices_" + this.creator, data, ttl);
   }
 
   async fetchStockPrices(apiKey) {
@@ -51,6 +45,41 @@ class Prices {
       })
       .catch(function (error) {
         console.error(error);
+      });
+
+    return prices;
+  }
+
+  async fetchCommoditiesPrices() {
+    const options = {
+      method: "GET",
+      url: `https://api.metals.live/v1/spot`,
+    };
+    const prices = await axios
+      .request(options)
+      .then(function (response) {
+        let prices = [];
+        for (const asset of response?.data) {
+          if (asset) {
+            for (const item in asset) {
+              if (item === "timestamp") continue;
+              prices[item] = {
+                price: asset[item],
+                currency: "USD",
+              };
+            }
+          }
+        }
+        return prices;
+      })
+      .catch(function (error) {
+        console.error(error);
+        let prices = [];
+        prices["gold"] = { price: 0, currency: "USD" };
+        prices["silver"] = { price: 0, currency: "USD" };
+        prices["platinum"] = { price: 0, currency: "USD" };
+        prices["palladium"] = { price: 0, currency: "USD" };
+        return prices;
       });
 
     return prices;

@@ -47,9 +47,7 @@ const getCryptoAsset = async (req, res, next) => {
 
   try {
     const dataBuilder = new DataBuilder("crypto", creator);
-    const sumsResult = await Asset.aggregate(
-      dataBuilder.getTotalSumByCategoryPipeline()
-    ).exec();
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
     const statsResults = await Asset.aggregate(
       dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
@@ -57,11 +55,7 @@ const getCryptoAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const cryptoAssetStats = new CryptoAssetStats(
-        statsResults,
-        sumsResult,
-        creator
-      );
+      const cryptoAssetStats = new CryptoAssetStats(statsResults, sumsResult, creator);
       assets = await cryptoAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -82,9 +76,7 @@ const getStockAsset = async (req, res, next) => {
 
   try {
     const dataBuilder = new DataBuilder("stocks", creator);
-    const sumsResult = await Asset.aggregate(
-      dataBuilder.getTotalSumByCategoryPipeline()
-    ).exec();
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
     const statsResults = await Asset.aggregate(
       dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
@@ -92,11 +84,7 @@ const getStockAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const stocksAssetStats = new StocksAssetStats(
-        statsResults,
-        sumsResult,
-        creator
-      );
+      const stocksAssetStats = new StocksAssetStats(statsResults, sumsResult, creator);
       assets = await stocksAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -118,9 +106,7 @@ const getETFAsset = async (req, res, next) => {
 
   try {
     const dataBuilder = new DataBuilder("etf", creator);
-    const sumsResult = await Asset.aggregate(
-      dataBuilder.getTotalSumByCategoryPipeline()
-    ).exec();
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
     const statsResults = await Asset.aggregate(
       dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
@@ -128,11 +114,7 @@ const getETFAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const ETFsAssetStats = new ETFAssetStats(
-        statsResults,
-        sumsResult,
-        creator
-      );
+      const ETFsAssetStats = new ETFAssetStats(statsResults, sumsResult, creator);
       assets = await ETFsAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -154,9 +136,7 @@ const getCommodityAsset = async (req, res, next) => {
 
   try {
     const dataBuilder = new DataBuilder("commodities", creator);
-    const sumsResult = await Asset.aggregate(
-      dataBuilder.getTotalSumByCategoryPipeline()
-    ).exec();
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
     const statsResults = await Asset.aggregate(
       dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
@@ -164,11 +144,7 @@ const getCommodityAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const commoditiesAssetStats = new CommoditiesAssetStats(
-        statsResults,
-        sumsResult,
-        creator
-      );
+      const commoditiesAssetStats = new CommoditiesAssetStats(statsResults, sumsResult, creator);
       assets = await commoditiesAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -190,9 +166,7 @@ const getMiscAsset = async (req, res, next) => {
 
   try {
     const dataBuilder = new DataBuilder("misc", creator);
-    const sumsResult = await Asset.aggregate(
-      dataBuilder.getTotalSumByCategoryPipeline()
-    ).exec();
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
     const statsResults = await Asset.aggregate(
       dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
@@ -200,11 +174,7 @@ const getMiscAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const miscAssetStats = new MiscAssetStats(
-        statsResults,
-        sumsResult,
-        creator
-      );
+      const miscAssetStats = new MiscAssetStats(statsResults, sumsResult, creator);
       assets = await miscAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -239,9 +209,7 @@ const getAssetsSummary = async (req, res, next) => {
 
   try {
     const dataBuilder = new DataBuilder("", creator);
-    const sumsResult = await Asset.aggregate(
-      dataBuilder.getTotalSumPipeline()
-    ).exec();
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumPipeline()).exec();
 
     const statsResults = await Asset.aggregate(
       dataBuilder.getTotalSumsByCategorySortedPipeline()
@@ -250,9 +218,7 @@ const getAssetsSummary = async (req, res, next) => {
     let sumsSummary = [];
     for (let asset of statsResults) {
       let formattedSummary = {};
-      const category = CATEGORIES.find(
-        (category) => category.key === asset._id.category
-      );
+      const category = CATEGORIES.find((category) => category.key === asset._id.category);
       formattedSummary.name = category.value;
       formattedSummary.alias = category.key;
       formattedSummary.holdingValue = asset.totalSum;
@@ -334,10 +300,7 @@ const addAsset = async (req, res, next) => {
   try {
     user = await User.findById(creator);
   } catch (err) {
-    const error = new HttpError(
-      "Adding new asset asset failed, try again.",
-      500
-    );
+    const error = new HttpError("Adding new asset asset failed, try again.", 500);
     return next(error);
   }
 
@@ -355,10 +318,7 @@ const addAsset = async (req, res, next) => {
     sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    const error = new HttpError(
-      "Adding new asset asset failed, try again.",
-      500
-    );
+    const error = new HttpError("Adding new asset asset failed, try again.", 500);
     return next(error);
   }
 
@@ -377,18 +337,12 @@ const updateAsset = async (req, res, next) => {
   try {
     asset = await Asset.findById(req.params.id);
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not find asset by ID.",
-      500
-    );
+    const error = new HttpError("Something went wrong, could not find asset by ID.", 500);
     return next(error);
   }
 
   if (asset.creator.toString() !== req.userData.userId) {
-    const error = new HttpError(
-      "You are not allowed to modify this asset.",
-      401
-    );
+    const error = new HttpError("You are not allowed to modify this asset.", 401);
     return next(error);
   }
 
@@ -433,10 +387,7 @@ const updateAsset = async (req, res, next) => {
   try {
     await asset.save();
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not update asset.",
-      500
-    );
+    const error = new HttpError("Something went wrong, could not update asset.", 500);
     return next(error);
   }
 
@@ -450,10 +401,7 @@ const deleteAsset = async (req, res, next) => {
     await deleteAssetCommon(req.params.id, req.userData.userId, sess);
     sess.commitTransaction();
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not update asset.",
-      500
-    );
+    const error = new HttpError("Something went wrong, could not update asset.", 500);
     return next(error);
   }
 
@@ -465,21 +413,14 @@ const deleteAssets = async (req, res, next) => {
     const sess = await mongoose.startSession();
     sess.startTransaction();
     const deletedTransactions = req.body.ids.map(async (id) => {
-      const transaction = await deleteAssetCommon(
-        id,
-        req.userData.userId,
-        sess
-      );
+      const transaction = await deleteAssetCommon(id, req.userData.userId, sess);
       return transaction;
     });
 
     await Promise.all(deletedTransactions);
     sess.commitTransaction();
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not delete asset.",
-      500
-    );
+    const error = new HttpError("Something went wrong, could not delete asset.", 500);
     return next(error);
   }
 
@@ -491,10 +432,7 @@ const deleteAssetCommon = async (id, userId, sess) => {
   try {
     asset = await Asset.findById(id).populate("creator");
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not find asset by ID.",
-      500
-    );
+    const error = new HttpError("Something went wrong, could not find asset by ID.", 500);
     return error;
   }
 
@@ -504,10 +442,7 @@ const deleteAssetCommon = async (id, userId, sess) => {
   }
 
   if (asset.creator.id !== userId) {
-    const error = new HttpError(
-      "You are not allowed to delete this asset.",
-      401
-    );
+    const error = new HttpError("You are not allowed to delete this asset.", 401);
     return error;
   }
 
@@ -516,10 +451,7 @@ const deleteAssetCommon = async (id, userId, sess) => {
     asset.creator.assets.pull(asset);
     await asset.creator.save({ session: sess });
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not delete asset.",
-      500
-    );
+    const error = new HttpError("Something went wrong, could not delete asset.", 500);
     return error;
   }
 };
@@ -533,9 +465,7 @@ const getTransactionsReport = async (req, res, next) => {
     let history = [];
     let transactions = [];
     if (queryObject.period === "monthly") {
-      transactions = await Asset.aggregate(
-        dataBuilder.getTransactionsPerMonths()
-      ).exec();
+      transactions = await Asset.aggregate(dataBuilder.getTransactionsPerMonths()).exec();
 
       let historyByYears = transactions.reduce((prevArr, newArr) => {
         prevArr[newArr._id.year] = prevArr[newArr._id.year] || [];
@@ -549,12 +479,9 @@ const getTransactionsReport = async (req, res, next) => {
           const totalInvested = historyByYears[year].reduce((total, record) => {
             return total + record.totalPriceInUSD;
           }, 0);
-          const totalTransactions = historyByYears[year].reduce(
-            (total, record) => {
-              return total + record.count;
-            },
-            0
-          );
+          const totalTransactions = historyByYears[year].reduce((total, record) => {
+            return total + record.count;
+          }, 0);
           let monthlySpent = Array(12).fill(0);
           for (let rec of historyByYears[year]) {
             monthlySpent[rec._id.month - 1] = roundNumber(rec.totalPriceInUSD);
@@ -581,16 +508,11 @@ const getTransactionsReport = async (req, res, next) => {
       }
     }
     if (queryObject.period === "yearly") {
-      transactions = await Asset.aggregate(
-        dataBuilder.getTransactionsPerYear()
-      ).exec();
+      transactions = await Asset.aggregate(dataBuilder.getTransactionsPerYear()).exec();
       const firstYear =
-        (transactions[transactions.length - 1] &&
-          transactions[transactions.length - 1]._id.year) ||
+        (transactions[transactions.length - 1] && transactions[transactions.length - 1]._id.year) ||
         new Date().getFullYear();
-      const lastYear =
-        (transactions[0] && transactions[0]._id.year) ||
-        new Date().getFullYear();
+      const lastYear = (transactions[0] && transactions[0]._id.year) || new Date().getFullYear();
 
       let yearsLabels = [];
       for (var i = lastYear; i >= firstYear; i--) {
@@ -602,9 +524,7 @@ const getTransactionsReport = async (req, res, next) => {
       let totalInvested = 0;
       let totalTransactions = 0;
       for (let transaction of transactions) {
-        yearlySpent[transaction._id.year - firstYear] = roundNumber(
-          transaction.totalPriceInUSD
-        );
+        yearlySpent[transaction._id.year - firstYear] = roundNumber(transaction.totalPriceInUSD);
         totalInvested += roundNumber(transaction.totalPriceInUSD);
         totalTransactions += transaction.count;
       }
@@ -620,10 +540,7 @@ const getTransactionsReport = async (req, res, next) => {
     res.status(200).json({ history });
   } catch (err) {
     console.log(err);
-    const error = new HttpError(
-      "Fetching history data failed, try again.",
-      500
-    );
+    const error = new HttpError("Fetching history data failed, try again.", 500);
     return next(error);
   }
 };

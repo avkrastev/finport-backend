@@ -3,12 +3,7 @@ const cacheProvider = require("./cache-provider");
 const fns = require("date-fns");
 const { CURRENCIES } = require("./currencies");
 
-const exchangeRatesBaseUSD = async (
-  amount,
-  from,
-  date = "",
-  returnList = false
-) => {
+const exchangeRatesBaseUSD = async (amount, from, date = "", returnList = false) => {
   let currencyRates;
 
   const today = fns.format(new Date(), "yyyy-MM-dd");
@@ -16,11 +11,7 @@ const exchangeRatesBaseUSD = async (
   if (from === "USD") {
     return amount;
   }
-  if (
-    cacheProvider.instance().has("currency_rates") &&
-    date !== "" &&
-    date === today
-  ) {
+  if (cacheProvider.instance().has("currency_rates") && date !== "" && date === today) {
     currencyRates = cacheProvider.instance().get("currency_rates");
   } else {
     let historyDate = "latest";
@@ -36,9 +27,7 @@ const exchangeRatesBaseUSD = async (
       .request(options)
       .then(function (response) {
         if (historyDate === "latest") {
-          cacheProvider
-            .instance()
-            .set("currency_rates", response.data.rates, 86400);
+          cacheProvider.instance().set("currency_rates", response.data.rates, 86400);
         }
         currencyRates = response.data.rates;
       })
@@ -64,29 +53,19 @@ const roundNumber = (num, scale = 2) => {
     if (+arr[1] + scale > 0) {
       sig = "+";
     }
-    return +(
-      Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) +
-      "e-" +
-      scale
-    );
+    return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
   }
 };
 
-const sumsInSupportedCurrencies = async (
-  holdingValue,
-  totalValue
-) => {
+const sumsInSupportedCurrencies = async (holdingValue, totalValue) => {
   const rates = await this.exchangeRatesBaseUSD(0, "", "", true);
-
-  return CURRENCIES.map(
-    (currency) => {
-      let exchanged = {};
-      exchanged.currency = currency.value;
-      exchanged.holdingAmount = rates[currency.value] * holdingValue;
-      exchanged.totalAmount = rates[currency.value] * totalValue;
-      return exchanged;
-    }
-  );
+  return CURRENCIES.map((currency) => {
+    let exchanged = {};
+    exchanged.currency = currency.value;
+    exchanged.holdingAmount = rates[currency.value] * holdingValue;
+    exchanged.totalAmount = rates[currency.value] * totalValue;
+    return exchanged;
+  });
 };
 
 const monthDiffFromToday = (date, date2 = new Date()) => {

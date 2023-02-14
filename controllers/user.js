@@ -12,6 +12,7 @@ const sendEmail = require("../utils/email-sender");
 const path = require("path");
 const fs = require("fs");
 const handlebars = require("handlebars");
+const { exchangeRatesBaseUSD } = require("../utils/functions");
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -131,6 +132,8 @@ const login = async (req, res, next) => {
       ([key]) => !["password", "id", "__v", "_id"].includes(key)
     )
   );
+
+  userData["exchangeRates"] = await exchangeRatesBaseUSD(0, "", "", true);
 
   res.json({
     userID: existingUser.id,
