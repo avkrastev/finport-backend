@@ -1,6 +1,6 @@
 const Prices = require("./prices");
 
-const stocksCacheTTL = 86400;
+const commoditiesCacheTTL = 86400;
 
 class CommodityPrices extends Prices {
   constructor(assets, creator) {
@@ -14,12 +14,12 @@ class CommodityPrices extends Prices {
     let currentPrices = [];
     if (this.creator) currentPrices = this.loadFromCache();
 
-    if (currentPrices && Object.keys(currentPrices).length === this.assets.length) {
+    if (currentPrices && this.assets && Object.keys(currentPrices).length === this.assets.length) {
       return currentPrices;
     }
 
     currentPrices = await this.fetchCommoditiesPrices();
-    this.storeInCache(currentPrices, stocksCacheTTL);
+    this.storeInCache(currentPrices, commoditiesCacheTTL);
     return currentPrices;
   }
 }

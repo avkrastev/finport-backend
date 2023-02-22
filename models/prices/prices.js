@@ -74,12 +74,6 @@ class Prices {
       })
       .catch(function (error) {
         console.error(error);
-        let prices = [];
-        prices["gold"] = { price: 0, currency: "USD" };
-        prices["silver"] = { price: 0, currency: "USD" };
-        prices["platinum"] = { price: 0, currency: "USD" };
-        prices["palladium"] = { price: 0, currency: "USD" };
-        return prices;
       });
 
     return prices;

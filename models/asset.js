@@ -11,9 +11,10 @@ const assetSchema = new Schema({
   price_usd: { type: Number, required: true },
   currency: { type: String, required: true },
   quantity: { type: Number, required: false },
+  weight: { type: String, required: false },
   date: { type: String, required: true },
   type: { type: Number, required: true },
-  creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" }
+  creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 
 assetSchema.set("toJSON", {

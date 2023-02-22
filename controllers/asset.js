@@ -19,6 +19,9 @@ const CommoditiesAssetStats = require("../models/stats/commodities");
 const MiscAssetStats = require("../models/stats/misc");
 const { CATEGORIES } = require("../utils/categories");
 const P2PAssetStats = require("../models/stats/p2p");
+const CommodityPrices = require("../models/prices/commodities");
+
+const gramOunceRatio = 0.0321507466;
 
 const getAsset = async (req, res, next) => {
   let assets;
@@ -286,6 +289,10 @@ const addAsset = async (req, res, next) => {
     price_usd = -Math.abs(price_usd);
   }
 
+  if (req.body.transaction.category === "commodities" && req.body.transaction.weight === "gr") {
+    quantity *= gramOunceRatio; // always store ounces as quantity
+  }
+
   const addNewAsset = new Asset({
     ...req.body.transaction,
     quantity,
@@ -300,7 +307,7 @@ const addAsset = async (req, res, next) => {
   try {
     user = await User.findById(creator);
   } catch (err) {
-    const error = new HttpError("Adding new asset asset failed, try again.", 500);
+    const error = new HttpError("Adding new asset failed, try again.", 500);
     return next(error);
   }
 
@@ -318,7 +325,7 @@ const addAsset = async (req, res, next) => {
     sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    const error = new HttpError("Adding new asset asset failed, try again.", 500);
+    const error = new HttpError("Adding new asset failed, try again.", 500);
     return next(error);
   }
 
@@ -331,7 +338,7 @@ const updateAsset = async (req, res, next) => {
     return next(new HttpError("Error!", 422));
   }
 
-  const { price, currency, quantity, date, type } = req.body;
+  const { price, currency, quantity, date, type, weight, category } = req.body;
 
   let asset;
   try {
@@ -356,7 +363,11 @@ const updateAsset = async (req, res, next) => {
     );
     asset.price_usd = priceInUsd;
   }
-  if (quantity) asset.quantity = quantity;
+  if (category === "commodities" && weight === "gr") {
+    asset.quantity = quantity * gramOunceRatio; // always store ounces as quantity
+  } else {
+    asset.quantity = quantity;
+  }
   if (date) {
     const priceInUsd = await exchangeRatesBaseUSD(
       asset.price,
@@ -545,6 +556,35 @@ const getTransactionsReport = async (req, res, next) => {
   }
 };
 
+const getCommodityPrices = async (req, res, next) => {
+  const creator = req.userData.userId;
+  let user;
+
+  try {
+    user = await User.findById(creator);
+  } catch (err) {
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+  const rates = await exchangeRatesBaseUSD(0, "", "", true);
+  try {
+    const commoditiesPrices = new CommodityPrices();
+    const prices = await commoditiesPrices.getPricesPerAssets();
+
+    for (const price in prices) {
+      prices[price] = {
+        price: rates[user.currency] * prices[price].price,
+        currency: user.currency,
+      };
+    }
+    res.json({ prices: { ...prices } });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+};
+
 exports.getAsset = getAsset;
 exports.getAssetById = getAssetById;
 exports.addAsset = addAsset;
@@ -559,3 +599,4 @@ exports.getMiscAsset = getMiscAsset;
 exports.getP2PAsset = getP2PAsset;
 exports.getAssetsSummary = getAssetsSummary;
 exports.getTransactionsReport = getTransactionsReport;
+exports.getCommodityPrices = getCommodityPrices;
