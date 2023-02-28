@@ -15,6 +15,8 @@ const {
   getAssetsSummary,
   getTransactionsReport,
   getCommodityPrices,
+  getCryptoPrices,
+  getStockPrices,
 } = require("../controllers/asset");
 const checkAuth = require("../middleware/auth");
 
@@ -60,6 +62,14 @@ router.get("/report", (req, res, next) => {
 
 router.get("/commodity/prices", (req, res, next) => {
   getCommodityPrices(req, res, next);
+});
+
+router.get("/crypto/prices", (req, res, next) => {
+  getCryptoPrices(req, res, next);
+});
+
+router.get("/stock/prices", (req, res, next) => {
+  getStockPrices(req, res, next);
 });
 
 router.get("/:id", (req, res, next) => {

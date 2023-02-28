@@ -14,16 +14,17 @@ class StockPrices extends Prices {
     let currentPrices = [];
     if (this.creator) currentPrices = this.loadFromCache();
 
-    if (
-      currentPrices &&
-      Object.keys(currentPrices).length === this.assets.length
-    ) {
+    if (currentPrices && Object.keys(currentPrices).length === this.assets.length) {
       return currentPrices;
     }
 
     currentPrices = await this.fetchStockPrices(apiKey);
     this.storeInCache(currentPrices, stocksCacheTTL);
     return currentPrices;
+  }
+
+  async getPricePerAsset(apiKey, asset) {
+    return await this.fetchStockPrices(apiKey, asset);
   }
 }
 

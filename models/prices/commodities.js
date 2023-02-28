@@ -12,14 +12,30 @@ class CommodityPrices extends Prices {
 
   async getPricesPerAssets() {
     let currentPrices = [];
-    if (this.creator) currentPrices = this.loadFromCache();
+    currentPrices = this.loadFromCache(false);
 
-    if (currentPrices && this.assets && Object.keys(currentPrices).length === this.assets.length) {
+    if (currentPrices && Object.keys(currentPrices).length > 0) {
       return currentPrices;
     }
 
-    currentPrices = await this.fetchCommoditiesPrices();
-    this.storeInCache(currentPrices, commoditiesCacheTTL);
+    if (process.env.ENV === "production") {
+      currentPrices = await this.fetchCommoditiesPrices2();
+    } else {
+      const devPrices = {
+        XAG: 0.048416374883805,
+        XAU: 0.00055307650407129,
+        XPD: 0.00074794315632012,
+        XPT: 0.0011037527593819,
+      };
+      for (const [key, value] of Object.entries(devPrices)) {
+        currentPrices[key] = {
+          price: 1 / value,
+          currency: "USD",
+        };
+      }
+    }
+
+    this.storeInCache(currentPrices, commoditiesCacheTTL, false);
     return currentPrices;
   }
 }

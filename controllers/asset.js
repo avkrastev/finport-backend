@@ -20,6 +20,8 @@ const MiscAssetStats = require("../models/stats/misc");
 const { CATEGORIES } = require("../utils/categories");
 const P2PAssetStats = require("../models/stats/p2p");
 const CommodityPrices = require("../models/prices/commodities");
+const CryptoPrices = require("../models/prices/crypto");
+const StockPrices = require("../models/prices/stocks");
 
 const gramOunceRatio = 0.0321507466;
 
@@ -585,6 +587,57 @@ const getCommodityPrices = async (req, res, next) => {
   }
 };
 
+const getCryptoPrices = async (req, res, next) => {
+  const creator = req.userData.userId;
+  let user;
+
+  try {
+    user = await User.findById(creator);
+  } catch (err) {
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+  const queryObject = url.parse(req.url, true).query;
+  const rates = await exchangeRatesBaseUSD(0, "", "", true);
+  try {
+    const cryptoPrices = new CryptoPrices();
+    let price = await cryptoPrices.getPricePerAsset(queryObject.token);
+
+    price = rates[user.currency] * price[queryObject.token].usd;
+
+    res.json({ price });
+  } catch (err) {
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+};
+
+const getStockPrices = async (req, res, next) => {
+  const creator = req.userData.userId;
+  let user;
+
+  try {
+    user = await User.findById(creator);
+  } catch (err) {
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+  const queryObject = url.parse(req.url, true).query;
+  const rates = await exchangeRatesBaseUSD(0, "", "", true);
+  try {
+    const stockPrices = new StockPrices();
+    let price = await stockPrices.fetchStockPrices(user.stocks_api_key, queryObject.stock);
+
+    price = rates[user.currency] * price[queryObject.stock].price;
+
+    res.json({ price });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+};
+
 exports.getAsset = getAsset;
 exports.getAssetById = getAssetById;
 exports.addAsset = addAsset;
@@ -600,3 +653,5 @@ exports.getP2PAsset = getP2PAsset;
 exports.getAssetsSummary = getAssetsSummary;
 exports.getTransactionsReport = getTransactionsReport;
 exports.getCommodityPrices = getCommodityPrices;
+exports.getCryptoPrices = getCryptoPrices;
+exports.getStockPrices = getStockPrices;

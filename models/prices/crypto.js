@@ -15,10 +15,7 @@ class CryptoPrices extends Prices {
     let currentPrices = [];
     if (this.creator) currentPrices = this.loadFromCache();
 
-    if (
-      currentPrices &&
-      Object.keys(currentPrices).length === this.assets.length
-    ) {
+    if (currentPrices && Object.keys(currentPrices).length === this.assets.length) {
       return currentPrices;
     }
 
@@ -28,7 +25,6 @@ class CryptoPrices extends Prices {
         ids: this.assets,
         vs_currencies: this.currency.toLowerCase(),
       });
-
       if (result.code === 200) {
         this.storeInCache(result.data, cryptoCacheTTL);
         currentPrices = result.data;
@@ -37,6 +33,20 @@ class CryptoPrices extends Prices {
       }
 
       return currentPrices;
+    }
+  }
+
+  async getPricePerAsset(asset) {
+    const CoinGeckoClient = new CoinGecko();
+    const result = await CoinGeckoClient.simple.price({
+      ids: asset,
+      vs_currencies: "usd",
+    });
+
+    if (result.code === 200) {
+      return result.data;
+    } else {
+      return new HttpError(result.data.message, result.code);
     }
   }
 }

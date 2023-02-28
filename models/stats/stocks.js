@@ -25,27 +25,25 @@ class StocksAssetStats extends AssetStats {
       let stats = {};
       stats.name = item._id.name;
       stats.symbol = item._id.symbol;
-      stats.totalSum = item.totalSum;
+
       stats.currency = this.findCurrency(item.data);
+      stats.totalSum =
+        stats.currency === "USD"
+          ? item.totalSum
+          : item.totalSum * this.exchangeRatesList[stats.currency];
       stats.holdingQuantity = item.totalQuantity;
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
-      if (this.currentPrices[stats.symbol].currency !== "USD") {
-        stats.currentPrice =
-          this.exchangeRatesList[this.currentPrices[stats.symbol].currency] *
-          this.currentPrices[stats.symbol].price;
-      } else {
-        stats.currentPrice = this.currentPrices[stats.symbol].price;
-      }
-      stats.holdingValue =
-        this.currentPrices[stats.symbol].price * stats.holdingQuantity;
-      stats.averageNetCost =
-        stats.holdingQuantity > 0 ? item.totalSum / stats.holdingQuantity : 0;
-      stats.difference = (item.totalSum - stats.holdingValue) * -1;
+      stats.currentPrice =
+        stats.currency === "USD"
+          ? this.currentPrices[stats.symbol].price
+          : this.currentPrices[stats.symbol].price * this.exchangeRatesList[stats.currency];
+      stats.holdingValue = stats.currentPrice * stats.holdingQuantity;
+      stats.averageNetCost = stats.holdingQuantity > 0 ? stats.totalSum / stats.holdingQuantity : 0;
+      stats.difference = (stats.totalSum - stats.holdingValue) * -1;
       stats.differenceInPercents =
-        stats.averageNetCost > 0
-          ? (stats.currentPrice / stats.averageNetCost - 1) * 100
-          : 0;
-
+        stats.averageNetCost > 0 ? (stats.currentPrice / stats.averageNetCost - 1) * 100 : 0;
+      stats.differenceInUSD =
+        stats.currency !== "USD" ? stats.difference / this.exchangeRatesList[stats.currency] : "";
       this.balance += stats.holdingValue;
 
       this.stats.push(stats);
@@ -61,7 +59,7 @@ class StocksAssetStats extends AssetStats {
       await this.getPrices();
       this.getStats();
     } else {
-      await this.getStatsWithoutCurrentPrices()
+      await this.getStatsWithoutCurrentPrices();
     }
 
     this.getTotals();

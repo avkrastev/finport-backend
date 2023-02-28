@@ -8,27 +8,34 @@ class Prices {
     this.currency = currency;
   }
 
-  loadFromCache() {
+  loadFromCache(perUser = true) {
     let currentPrices = [];
-    if (cacheProvider.instance().has(this.category + "_prices_" + this.creator)) {
+    if (perUser && cacheProvider.instance().has(this.category + "_prices_" + this.creator)) {
       currentPrices = cacheProvider.instance().get(this.category + "_prices_" + this.creator);
+    } else {
+      currentPrices = cacheProvider.instance().get(this.category + "_prices") || [];
     }
 
     return currentPrices;
   }
 
-  storeInCache(data, ttl) {
-    cacheProvider.instance().set(this.category + "_prices_" + this.creator, data, ttl);
+  storeInCache(data, ttl, perUser = true) {
+    if (perUser) {
+      cacheProvider.instance().set(this.category + "_prices_" + this.creator, data, ttl);
+    } else {
+      cacheProvider.instance().set(this.category + "_prices", data, ttl);
+    }
   }
 
-  async fetchStockPrices(apiKey) {
+  async fetchStockPrices(apiKey, asset = "") {
     const options = {
       method: "GET",
-      url: "https://yfapi.net/v6/finance/quote?symbols=" + this.assets,
+      url: "https://yfapi.net/v6/finance/quote?symbols=" + (asset !== "" ? asset : this.assets),
       headers: {
         "x-api-key": apiKey,
       },
     };
+
     const prices = await axios
       .request(options)
       .then(function (response) {
@@ -74,6 +81,39 @@ class Prices {
       })
       .catch(function (error) {
         console.error(error);
+
+        let prices = [];
+        prices["gold"] = { price: 0, currency: "USD" };
+        prices["silver"] = { price: 0, currency: "USD" };
+        prices["platinum"] = { price: 0, currency: "USD" };
+        prices["palladium"] = { price: 0, currency: "USD" };
+        return prices;
+      });
+
+    return prices;
+  }
+
+  async fetchCommoditiesPrices2() {
+    const options = {
+      method: "GET",
+      url: `https://commodities-api.com/api/latest?access_key=1h3adty49rm63sdeou042788mel90zww051siwhihthdhj4vu0xosvpizui7&symbols=XAU,XAG,XPT,XPD`,
+    };
+    const prices = await axios
+      .request(options)
+      .then(function (response) {
+        let prices = [];
+        for (const [key, value] of Object.entries(response.data.data.rates)) {
+          prices[key] = {
+            price: 1 / value,
+            currency: "USD",
+          };
+        }
+
+        return prices;
+      })
+      .catch(function (error) {
+        console.error(error);
+        return error;
       });
 
     return prices;
