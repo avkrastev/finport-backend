@@ -85,8 +85,18 @@ const compoundInterest = (principal, rate, time) => {
   return a - principal;
 };
 
+const deserializeParams = (string) => {
+  let deserialized = {};
+
+  for (let item of string.split(",")) {
+    deserialized[item.split(":")[0]] = item.split(":")[1];
+  }
+  return deserialized;
+};
+
 exports.exchangeRatesBaseUSD = exchangeRatesBaseUSD;
 exports.roundNumber = roundNumber;
 exports.monthDiffFromToday = monthDiffFromToday;
 exports.compoundInterest = compoundInterest;
 exports.sumsInSupportedCurrencies = sumsInSupportedCurrencies;
+exports.deserializeParams = deserializeParams;

@@ -9,6 +9,7 @@ const {
   exchangeRatesBaseUSD,
   roundNumber,
   sumsInSupportedCurrencies,
+  deserializeParams,
 } = require("../utils/functions");
 const fns = require("date-fns");
 const DataBuilder = require("../models/data-builder");
@@ -26,14 +27,33 @@ const StockPrices = require("../models/prices/stocks");
 const gramOunceRatio = 0.0321507466;
 
 const getAsset = async (req, res, next) => {
-  let assets;
+  let assets = [];
+  let records;
+  let filters = {};
+  let sorts = { date: "desc" };
   const queryObject = url.parse(req.url, true).query;
 
+  const perPage = queryObject.l || 5;
+  const page = queryObject.p || 0;
+  const filter = queryObject.f || null;
+  const sort = queryObject.s || null;
+
   try {
+    if (filter) {
+      filters = deserializeParams(filter);
+    }
+    if (sort) {
+      sorts = deserializeParams(sort);
+    }
+
     const creator = req.userData.userId;
-    assets = await Asset.find({ creator, ...queryObject }).sort({
-      date: "desc",
-    });
+    assets = await Asset.find({ creator, ...queryObject, ...filters })
+      .limit(perPage)
+      .skip(perPage * page)
+      .sort({
+        ...sorts,
+      });
+    records = await Asset.countDocuments({ creator: creator, ...filters });
   } catch (err) {
     const error = new HttpError("Something went wrong!", 500);
     return next(error);
@@ -44,7 +64,7 @@ const getAsset = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ assets });
+  res.json({ assets, records, page: Number(page), limit: Number(perPage), filter, sort });
 };
 
 const getCryptoAsset = async (req, res, next) => {
@@ -54,9 +74,7 @@ const getCryptoAsset = async (req, res, next) => {
     const dataBuilder = new DataBuilder("crypto", creator);
     const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
-    const statsResults = await Asset.aggregate(
-      dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
-    ).exec();
+    const statsResults = await Asset.aggregate(dataBuilder.getTotalSumsByIdPipeline()).exec();
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
@@ -71,6 +89,7 @@ const getCryptoAsset = async (req, res, next) => {
 
     res.json({ assets });
   } catch (err) {
+    console.log(err);
     const error = new HttpError("Something went wrong!", 500);
     return next(error);
   }
@@ -83,9 +102,7 @@ const getStockAsset = async (req, res, next) => {
     const dataBuilder = new DataBuilder("stocks", creator);
     const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
-    const statsResults = await Asset.aggregate(
-      dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
-    ).exec();
+    const statsResults = await Asset.aggregate(dataBuilder.getTotalSumsBySymbolPipeline()).exec();
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
@@ -113,9 +130,7 @@ const getETFAsset = async (req, res, next) => {
     const dataBuilder = new DataBuilder("etf", creator);
     const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
-    const statsResults = await Asset.aggregate(
-      dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
-    ).exec();
+    const statsResults = await Asset.aggregate(dataBuilder.getTotalSumsBySymbolPipeline()).exec();
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
@@ -143,9 +158,7 @@ const getCommodityAsset = async (req, res, next) => {
     const dataBuilder = new DataBuilder("commodities", creator);
     const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
-    const statsResults = await Asset.aggregate(
-      dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
-    ).exec();
+    const statsResults = await Asset.aggregate(dataBuilder.getTotalSumsBySymbolPipeline()).exec();
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
@@ -173,9 +186,7 @@ const getMiscAsset = async (req, res, next) => {
     const dataBuilder = new DataBuilder("misc", creator);
     const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
 
-    const statsResults = await Asset.aggregate(
-      dataBuilder.getTotalSumsByCategoryAndAssetPipeline()
-    ).exec();
+    const statsResults = await Asset.aggregate(dataBuilder.getTotalSumsByNamePipeline()).exec();
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {

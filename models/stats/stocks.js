@@ -23,7 +23,7 @@ class StocksAssetStats extends AssetStats {
   getStats() {
     for (let item of this.data) {
       let stats = {};
-      stats.name = item._id.name;
+      stats.name = item.data[item.data.length - 1].name;
       stats.symbol = item._id.symbol;
 
       stats.currency = this.findCurrency(item.data);

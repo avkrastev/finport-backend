@@ -117,7 +117,41 @@ class DataBuilder {
     ];
   }
 
-  getTotalSumsByCategoryAndAssetPipeline() {
+  getTotalSumsByIdPipeline() {
+    return [
+      {
+        $match: {
+          category: this.category,
+          creator: ObjectId(this.userId),
+        },
+      },
+      {
+        $group: {
+          _id: {
+            assetId: "$asset_id",
+          },
+          data: {
+            $push: {
+              name: "$name",
+              symbol: "$symbol",
+              currency: "$currency",
+            },
+          },
+          totalSum: {
+            $sum: "$price_usd",
+          },
+          totalSumInOriginalCurrency: {
+            $sum: "$price",
+          },
+          totalQuantity: {
+            $sum: "$quantity",
+          },
+        },
+      },
+    ];
+  }
+
+  getTotalSumsByNamePipeline() {
     return [
       {
         $match: {
@@ -129,11 +163,42 @@ class DataBuilder {
         $group: {
           _id: {
             name: "$name",
-            assetId: "$asset_id",
+          },
+          data: {
+            $push: {
+              currency: "$currency",
+            },
+          },
+          totalSum: {
+            $sum: "$price_usd",
+          },
+          totalSumInOriginalCurrency: {
+            $sum: "$price",
+          },
+          totalQuantity: {
+            $sum: "$quantity",
+          },
+        },
+      },
+    ];
+  }
+
+  getTotalSumsBySymbolPipeline() {
+    return [
+      {
+        $match: {
+          category: this.category,
+          creator: ObjectId(this.userId),
+        },
+      },
+      {
+        $group: {
+          _id: {
             symbol: "$symbol",
           },
           data: {
             $push: {
+              name: "$name",
               currency: "$currency",
             },
           },
