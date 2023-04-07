@@ -163,6 +163,7 @@ class DataBuilder {
         $group: {
           _id: {
             name: "$name",
+            property_type: "$property_type",
           },
           data: {
             $push: {

@@ -14,6 +14,7 @@ const assetSchema = new Schema({
   weight: { type: String, required: false },
   date: { type: String, required: true },
   type: { type: Number, required: true },
+  property_type: { type: Number, required: false },
   creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 

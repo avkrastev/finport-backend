@@ -17,6 +17,7 @@ const {
   getCommodityPrices,
   getCryptoPrices,
   getStockPrices,
+  getRealEstateAsset,
 } = require("../controllers/asset");
 const checkAuth = require("../middleware/auth");
 
@@ -50,6 +51,10 @@ router.get("/misc", (req, res, next) => {
 
 router.get("/p2p", (req, res, next) => {
   getP2PAsset(req, res, next);
+});
+
+router.get("/realestate", (req, res, next) => {
+  getRealEstateAsset(req, res, next);
 });
 
 router.get("/summary", (req, res, next) => {

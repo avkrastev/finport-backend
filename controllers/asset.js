@@ -18,6 +18,7 @@ const StocksAssetStats = require("../models/stats/stocks");
 const ETFAssetStats = require("../models/stats/etf");
 const CommoditiesAssetStats = require("../models/stats/commodities");
 const MiscAssetStats = require("../models/stats/misc");
+const RealEstatesAssetStats = require("../models/stats/real");
 const { CATEGORIES } = require("../utils/categories");
 const P2PAssetStats = require("../models/stats/p2p");
 const CommodityPrices = require("../models/prices/commodities");
@@ -212,6 +213,33 @@ const getP2PAsset = async (req, res, next) => {
   try {
     const p2pAssetStats = new P2PAssetStats(creator);
     const assets = await p2pAssetStats.getProfitPerAssets();
+    res.json({ assets });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+};
+
+const getRealEstateAsset = async (req, res, next) => {
+  const creator = req.userData.userId;
+
+  try {
+    const dataBuilder = new DataBuilder("real", creator);
+    const sumsResult = await Asset.aggregate(dataBuilder.getTotalSumByCategoryPipeline()).exec();
+
+    const statsResults = await Asset.aggregate(dataBuilder.getTotalSumsByNamePipeline()).exec();
+
+    let assets = [];
+    if (statsResults.length > 0 && sumsResult.length > 0) {
+      const realEstateAssetStats = new RealEstatesAssetStats(statsResults, sumsResult, creator);
+      assets = await realEstateAssetStats.getAllData();
+
+      assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
+        assets.sums.holdingValue,
+        assets.sums.totalSum
+      );
+    }
     res.json({ assets });
   } catch (err) {
     console.log(err);
@@ -660,6 +688,7 @@ exports.getStockAsset = getStockAsset;
 exports.getETFAsset = getETFAsset;
 exports.getCommodityAsset = getCommodityAsset;
 exports.getMiscAsset = getMiscAsset;
+exports.getRealEstateAsset = getRealEstateAsset;
 exports.getP2PAsset = getP2PAsset;
 exports.getAssetsSummary = getAssetsSummary;
 exports.getTransactionsReport = getTransactionsReport;
