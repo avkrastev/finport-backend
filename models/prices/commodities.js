@@ -19,7 +19,7 @@ class CommodityPrices extends Prices {
     }
 
     if (process.env.ENV === "production") {
-      currentPrices = await this.fetchCommoditiesPrices2();
+      currentPrices = await this.fetchCommoditiesPrices();
     } else {
       const devPrices = {
         XAG: 0.048416374883805,

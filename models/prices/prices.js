@@ -70,8 +70,15 @@ class Prices {
           if (asset) {
             for (const item in asset) {
               if (item === "timestamp") continue;
-              prices[item] = {
-                price: asset[item],
+
+              let key;
+              if (item === "gold") key = "XAU";
+              if (item === "silver") key = "XAG";
+              if (item === "platinum") key = "XPT";
+              if (item === "palladium") key = "XPD";
+
+              prices[key] = {
+                price: Number(asset[item]),
                 currency: "USD",
               };
             }

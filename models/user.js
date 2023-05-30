@@ -16,6 +16,7 @@ const userSchema = new Schema({
   assets: [{ type: mongoose.Types.ObjectId, required: true, ref: "Asset" }],
   p2p: [{ type: mongoose.Types.ObjectId, required: true, ref: "P2p" }],
   history: [{ type: mongoose.Types.ObjectId, required: true, ref: "History" }],
+  real_estate: [{ type: mongoose.Types.ObjectId, required: true, ref: "RealEstate" }],
 });
 
 userSchema.plugin(uniqueValidator);

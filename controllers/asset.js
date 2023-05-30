@@ -330,6 +330,11 @@ const addAsset = async (req, res, next) => {
     price_usd = -Math.abs(price_usd);
   }
 
+  if (req.body.transaction.type === 2) {
+    price = 0;
+    price_usd = 0;
+  }
+
   if (req.body.transaction.category === "commodities" && req.body.transaction.weight === "gr") {
     quantity *= gramOunceRatio; // always store ounces as quantity
   }
@@ -428,6 +433,10 @@ const updateAsset = async (req, res, next) => {
       asset.quantity = -Math.abs(quantity);
       asset.price = -Math.abs(price);
       asset.price_usd = -Math.abs(priceInUsd);
+    } else if (type === 2) {
+      asset.quantity = Math.abs(quantity);
+      asset.price = 0;
+      asset.price_usd = 0;
     } else {
       asset.quantity = Math.abs(quantity);
       asset.price = Math.abs(price);
