@@ -14,22 +14,22 @@ const exchangeRatesBaseUSD = async (amount, from, date = "", returnList = false)
   if (cacheProvider.instance().has("currency_rates") && date !== "" && date === today) {
     currencyRates = cacheProvider.instance().get("currency_rates");
   } else {
-    let historyDate = "latest";
+    let historyDate = today;
     if (date && date < today) {
       historyDate = date;
     }
     const options = {
       method: "GET",
-      url: "https://api.exchangerate.host/" + historyDate + "?base=USD",
+      url: `https://api.freecurrencyapi.com/v1/latest?apikey=${process.env.CURRENCY_APY_KEY}&date=${historyDate}`,
     };
 
     await axios
       .request(options)
       .then(function (response) {
-        if (historyDate === "latest") {
-          cacheProvider.instance().set("currency_rates", response.data.rates, 86400);
+        if (historyDate === today) {
+          cacheProvider.instance().set("currency_rates", response.data.data, 86400);
         }
-        currencyRates = response.data.rates;
+        currencyRates = response.data.data;
       })
       .catch(function (error) {
         console.error(error);
