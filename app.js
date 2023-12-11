@@ -26,8 +26,9 @@ app.use((req, res, next) => {
     "https://zany-erin-yak-hem.cyclic.app",
   ];
   const origin = req.headers.origin;
+  console.log("origin", origin)
   if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Origin", "*");
   }
 
   res.setHeader(
