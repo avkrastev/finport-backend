@@ -41,7 +41,9 @@ app.use((req, res, next) => {
 const unless =
   (middleware, ...paths) =>
   (req, res, next) =>
-    paths.some((path) => path === req.path) ? next() : middleware(req, res, next);
+    paths.some((path) => new RegExp(`^${path}$`).test(req.path))
+      ? next()
+      : middleware(req, res, next);
 
 app.use(
   unless(
