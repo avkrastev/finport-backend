@@ -28,6 +28,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   console.log("origin", origin)
   if (allowedOrigins.includes(origin)) {
+    console.log(31231)
     res.setHeader("Access-Control-Allow-Origin", "*");
   }
 
