@@ -60,41 +60,22 @@ class Prices {
   async fetchCommoditiesPrices() {
     const options = {
       method: "GET",
-      url: `https://api.metals.live/v1/spot`,
+      url: `https://api.metalpriceapi.com/v1/latest?api_key=${process.env.COMMODITIES_APY_KEY}&base=USD&currencies=XAU,XAG,XPD,XPT`,
     };
     const prices = await axios
       .request(options)
       .then(function (response) {
         let prices = [];
-        for (const asset of response?.data) {
-          if (asset) {
-            for (const item in asset) {
-              if (item === "timestamp") continue;
-
-              let key;
-              if (item === "gold") key = "XAU";
-              if (item === "silver") key = "XAG";
-              if (item === "platinum") key = "XPT";
-              if (item === "palladium") key = "XPD";
-
-              prices[key] = {
-                price: Number(asset[item]),
-                currency: "USD",
-              };
-            }
-          }
+        for (const item in response?.data?.rates) {
+          prices[item] = {
+            price: Number(response?.data?.rates[item]),
+            currency: "USD",
+          };
         }
         return prices;
       })
       .catch(function (error) {
         console.error(error);
-
-        let prices = [];
-        prices["gold"] = { price: 0, currency: "USD" };
-        prices["silver"] = { price: 0, currency: "USD" };
-        prices["platinum"] = { price: 0, currency: "USD" };
-        prices["palladium"] = { price: 0, currency: "USD" };
-        return prices;
       });
 
     return prices;
