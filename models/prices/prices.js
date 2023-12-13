@@ -68,7 +68,7 @@ class Prices {
         let prices = [];
         for (const item in response?.data?.rates) {
           prices[item] = {
-            price: Number(response?.data?.rates[item]),
+            price: 1 / Number(response?.data?.rates[item]),
             currency: "USD",
           };
         }

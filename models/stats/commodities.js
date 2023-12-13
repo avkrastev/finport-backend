@@ -34,22 +34,24 @@ class CommoditiesAssetStats extends AssetStats {
       let stats = {};
       stats.name = item.data[item.data.length - 1].name;
       stats.symbol = item._id.symbol;
-      stats.totalSum = item.totalSum;
       stats.currency = this.findCurrency(item.data);
+      stats.totalSum =
+        stats.currency === "USD"
+          ? item.totalSum
+          : item.totalSum * this.exchangeRatesList[stats.currency];
       stats.holdingQuantity = item.totalQuantity;
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
-      if (this.currentPrices[stats.symbol].currency !== "USD") {
-        stats.currentPrice =
-          this.exchangeRatesList[this.currentPrices[stats.symbol].currency] *
-          this.currentPrices[stats.symbol].price;
-      } else {
-        stats.currentPrice = this.currentPrices[stats.symbol].price;
-      }
+      stats.currentPrice =
+        stats.currency === "USD"
+          ? this.currentPrices[stats.symbol].price
+          : this.currentPrices[stats.symbol].price * this.exchangeRatesList[stats.currency];
       stats.holdingValue = this.currentPrices[stats.symbol].price * stats.holdingQuantity;
       stats.averageNetCost = stats.holdingQuantity > 0 ? item.totalSum / stats.holdingQuantity : 0;
       stats.difference = (item.totalSum - stats.holdingValue) * -1;
       stats.differenceInPercents =
         stats.averageNetCost > 0 ? (stats.currentPrice / stats.averageNetCost - 1) * 100 : 0;
+      stats.differenceInUSD =
+        stats.currency !== "USD" ? stats.difference / this.exchangeRatesList[stats.currency] : "";
 
       this.balance += stats.holdingValue;
 
