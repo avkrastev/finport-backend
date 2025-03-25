@@ -10,7 +10,7 @@ class StockPrices extends Prices {
     this.creator = creator;
   }
 
-  async getPricesPerAssets(apiKey) {
+  async getPricesPerAssets() {
     let currentPrices = [];
     if (this.creator) currentPrices = this.loadFromCache();
 
@@ -18,13 +18,13 @@ class StockPrices extends Prices {
       return currentPrices;
     }
 
-    currentPrices = await this.fetchStockPrices(apiKey);
+    currentPrices = await this.fetchStockPrices();
     this.storeInCache(currentPrices, stocksCacheTTL);
     return currentPrices;
   }
 
-  async getPricePerAsset(apiKey, asset) {
-    return await this.fetchStockPrices(apiKey, asset);
+  async getPricePerAsset(asset) {
+    return await this.fetchStockPrices(asset);
   }
 }
 

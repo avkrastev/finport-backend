@@ -24,6 +24,7 @@ const P2PAssetStats = require("../models/stats/p2p");
 const CommodityPrices = require("../models/prices/commodities");
 const CryptoPrices = require("../models/prices/crypto");
 const StockPrices = require("../models/prices/stocks");
+const yahooFinance = require("yahoo-finance2").default;
 
 const gramOunceRatio = 0.0321507466;
 
@@ -79,7 +80,7 @@ const getCryptoAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const cryptoAssetStats = new CryptoAssetStats(statsResults, sumsResult, creator);
+      const cryptoAssetStats = new CryptoAssetStats(statsResults, sumsResult, creator, req.session);
       assets = await cryptoAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -107,7 +108,7 @@ const getStockAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const stocksAssetStats = new StocksAssetStats(statsResults, sumsResult, creator);
+      const stocksAssetStats = new StocksAssetStats(statsResults, sumsResult, creator, req.session);
       assets = await stocksAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -135,7 +136,7 @@ const getETFAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const ETFsAssetStats = new ETFAssetStats(statsResults, sumsResult, creator);
+      const ETFsAssetStats = new ETFAssetStats(statsResults, sumsResult, creator, req.session);
       assets = await ETFsAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -163,7 +164,12 @@ const getCommodityAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const commoditiesAssetStats = new CommoditiesAssetStats(statsResults, sumsResult, creator);
+      const commoditiesAssetStats = new CommoditiesAssetStats(
+        statsResults,
+        sumsResult,
+        creator,
+        req.session
+      );
       assets = await commoditiesAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -191,7 +197,7 @@ const getMiscAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const miscAssetStats = new MiscAssetStats(statsResults, sumsResult, creator);
+      const miscAssetStats = new MiscAssetStats(statsResults, sumsResult, creator, req.session);
       assets = await miscAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -211,7 +217,7 @@ const getP2PAsset = async (req, res, next) => {
   const creator = req.userData.userId;
 
   try {
-    const p2pAssetStats = new P2PAssetStats(creator);
+    const p2pAssetStats = new P2PAssetStats(creator, req.session);
     const assets = await p2pAssetStats.getProfitPerAssets();
     res.json({ assets });
   } catch (err) {
@@ -232,7 +238,12 @@ const getRealEstateAsset = async (req, res, next) => {
 
     let assets = [];
     if (statsResults.length > 0 && sumsResult.length > 0) {
-      const realEstateAssetStats = new RealEstatesAssetStats(statsResults, sumsResult, creator);
+      const realEstateAssetStats = new RealEstatesAssetStats(
+        statsResults,
+        sumsResult,
+        creator,
+        req.session
+      );
       assets = await realEstateAssetStats.getAllData();
 
       assets.sums.sumsInDifferentCurrencies = await sumsInSupportedCurrencies(
@@ -320,6 +331,11 @@ const addAsset = async (req, res, next) => {
     fns.format(new Date(req.body.transaction.date), "yyyy-MM-dd")
   );
 
+  let asset_currency;
+
+  const result = await yahooFinance.quote(req.body.transaction.symbol);
+  asset_currency = result.currency;
+
   let quantity = req.body.transaction.quantity;
   let price = req.body.transaction.price;
   let price_usd = roundNumber(priceInUsd);
@@ -346,6 +362,7 @@ const addAsset = async (req, res, next) => {
     price_usd,
     date: new Date(req.body.transaction.date).toISOString(),
     creator,
+    asset_currency
   });
 
   let user;
@@ -674,7 +691,7 @@ const getStockPrices = async (req, res, next) => {
   const rates = await exchangeRatesBaseUSD(0, "", "", true);
   try {
     const stockPrices = new StockPrices();
-    let price = await stockPrices.fetchStockPrices(user.stocks_api_key, queryObject.stock);
+    let price = await stockPrices.fetchStockPrices(queryObject.stock);
 
     price = rates[user.currency] * price[queryObject.stock].price;
 
@@ -682,6 +699,21 @@ const getStockPrices = async (req, res, next) => {
   } catch (err) {
     console.log(err);
     const error = new HttpError("Something went wrong!", 500);
+    return next(error);
+  }
+};
+
+const searchForStocks = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ error: "Query parameter is required" });
+    }
+
+    const results = await yahooFinance.search(query);
+    res.json({ data: results.quotes });
+  } catch (error) {
+    console.error("Error fetching stock data:", error);
     return next(error);
   }
 };
@@ -704,3 +736,4 @@ exports.getTransactionsReport = getTransactionsReport;
 exports.getCommodityPrices = getCommodityPrices;
 exports.getCryptoPrices = getCryptoPrices;
 exports.getStockPrices = getStockPrices;
+exports.searchForStocks = searchForStocks;

@@ -9,7 +9,6 @@ const userSchema = new Schema({
   email_verified: { type: Boolean, default: false },
   password: { type: String, required: true, minlength: 8 },
   image: { type: String, required: false },
-  stocks_api_key: { type: String, required: false },
   currency: { type: String, required: false },
   language: { type: String, required: false },
   categories: { type: Array },

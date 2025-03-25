@@ -1,11 +1,8 @@
-const { exchangeRatesBaseUSD } = require("../../utils/functions");
 const AssetStats = require("./asset");
 
 class RealEstatesAssetStats extends AssetStats {
-  constructor(data, totals) {
-    super();
-    this.data = data;
-    this.totals = totals;
+  constructor(data, totals, session) {
+    super(data, totals, session);
     this.category = "misc";
   }
 
@@ -22,13 +19,13 @@ class RealEstatesAssetStats extends AssetStats {
   }
 
   async getStatsWithoutCurrentPrices() {
-    const exchangeRatesList = await exchangeRatesBaseUSD(0, "", "", true);
+    const exchangeRatesList = this.session.exchangeRates;
 
     for (let item of this.data) {
       let stats = {};
       stats.name = item._id.name;
       stats.property_type = item._id.property_type;
-      stats.currency = this.findCurrency(item.data);
+      stats.currency = item.data[item.data.length - 1].asset_currency;
       stats.holdingQuantity = item.totalQuantity;
       stats.currentPrice = "N/A";
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;

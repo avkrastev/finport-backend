@@ -10,6 +10,7 @@ const assetSchema = new Schema({
   price: { type: Number, required: true },
   price_usd: { type: Number, required: true },
   currency: { type: String, required: true },
+  asset_currency: { type: String, required: false },
   quantity: { type: Number, required: false },
   weight: { type: String, required: false },
   date: { type: String, required: true },

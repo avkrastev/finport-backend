@@ -6,12 +6,11 @@ const {
   monthDiffFromToday,
   compoundInterest,
   sumsInSupportedCurrencies,
-  exchangeRatesBaseUSD,
 } = require("../../utils/functions");
 
 class P2PAssetStats extends AssetStats {
-  constructor(creator = "") {
-    super();
+  constructor(creator = "", session) {
+    super([], {}, session); 
     this.category = "p2p";
     this.creator = creator;
   }
@@ -21,7 +20,7 @@ class P2PAssetStats extends AssetStats {
   }
 
   async getStats() {
-    const exchangeRatesList = await exchangeRatesBaseUSD(0, "", "", true);
+    const exchangeRatesList = this.session.exchangeRates;
 
     for (let item of this.data) {
       const interestsPaid = this.totalInterestPaid.find(
@@ -29,7 +28,7 @@ class P2PAssetStats extends AssetStats {
       );
       let stats = {};
       stats.name = item._id.name;
-      stats.currency = this.findCurrency(item.data);
+      stats.currency = item.data[item.data.length - 1].asset_currency;
       stats.totalSum = item.totalSum;
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency + interestsPaid.interest;
       stats.holdingQuantity = item.totalQuantity;

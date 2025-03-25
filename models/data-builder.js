@@ -135,6 +135,7 @@ class DataBuilder {
               name: "$name",
               symbol: "$symbol",
               currency: "$currency",
+              asset_currency: "$asset_currency",
             },
           },
           totalSum: {
@@ -168,6 +169,7 @@ class DataBuilder {
           data: {
             $push: {
               currency: "$currency",
+              asset_currency: "$asset_currency",
             },
           },
           totalSum: {
@@ -201,6 +203,7 @@ class DataBuilder {
             $push: {
               name: "$name",
               currency: "$currency",
+              asset_currency: "$asset_currency",
             },
           },
           totalSum: {

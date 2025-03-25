@@ -12,7 +12,8 @@ const sendEmail = require("../utils/email-sender");
 const path = require("path");
 const fs = require("fs");
 const handlebars = require("handlebars");
-const { exchangeRatesBaseUSD } = require("../utils/functions");
+const fns = require("date-fns");
+const axios = require("axios");
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -129,17 +130,44 @@ const login = async (req, res, next) => {
 
   const userData = Object.fromEntries(
     Object.entries(existingUser.toObject({ getters: true })).filter(
-      ([key]) => !["password", "id", "__v", "_id"].includes(key)
+      ([key]) => !["password", "id", "__v", "_id", "history", "assets"].includes(key)
     )
   );
 
-  userData["exchangeRates"] = await exchangeRatesBaseUSD(0, "", "", true);
+  req.session.regenerate(async function (err) {
+    if (err) return next(err);
 
-  res.json({
-    userID: existingUser.id,
-    email: existingUser.email,
-    token,
-    userData,
+    try {
+      const today = fns.format(new Date(), "yyyy-MM-dd");
+
+      const options = {
+        method: "GET",
+        url: `https://api.freecurrencyapi.com/v1/latest?apikey=${process.env.CURRENCY_APY_KEY}&date=${today}`,
+      };
+
+      const response = await axios.request(options);
+      const rates = response.data.data;
+
+      req.session.exchangeRates = rates;
+
+      req.session.save((err) => {
+        if (err) {
+          console.error("❌ Session save error:", err);
+        } else {
+          console.log("✅ Session saved successfully:", req.session);
+        }
+
+        res.json({
+          userID: existingUser.id,
+          email: existingUser.email,
+          token,
+          userData,
+        });
+      });
+    } catch (error) {
+      console.error("❌ Error fetching exchange rates:", error);
+      next(error);
+    }
   });
 };
 
@@ -354,6 +382,17 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+const logout = async (req, res, next) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.status(500).json({ error: "Failed to logout" });
+    }
+    res.clearCookie("connect.sid");
+    res.json({ message: "Logged out successfully" });
+  });
+};
+
 exports.signup = signup;
 exports.login = login;
 exports.getLoggedInUserData = getLoggedInUserData;
@@ -363,3 +402,4 @@ exports.verifyMail = verifyMail;
 exports.sendVerificationEmail = sendVerificationEmail;
 exports.setResetPasswordLink = setResetPasswordLink;
 exports.changePassword = changePassword;
+exports.logout = logout;

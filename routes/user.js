@@ -9,7 +9,8 @@ const {
   verifyMail,
   sendVerificationEmail,
   setResetPasswordLink,
-  changePassword
+  changePassword,
+  logout
 } = require("../controllers/user");
 
 const router = express.Router();
@@ -56,6 +57,10 @@ router.post("/reset", (req, res, next) => {
 
 router.post("/changePassword", (req, res, next) => {
   changePassword(req, res, next);
+});
+
+router.post("/logout", (req, res, next) => {
+  logout(req, res, next);
 });
 
 module.exports = router;

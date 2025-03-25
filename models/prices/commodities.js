@@ -18,7 +18,7 @@ class CommodityPrices extends Prices {
       return currentPrices;
     }
 
-    if (process.env.ENV === "production") {
+    if (process.env.ENV === "production" || true) {
       currentPrices = await this.fetchCommoditiesPrices();
     } else {
       const devPrices = {

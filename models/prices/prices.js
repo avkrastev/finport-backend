@@ -1,5 +1,6 @@
 const cacheProvider = require("../../utils/cache-provider");
 const axios = require("axios");
+const yahooFinance = require("yahoo-finance2").default;
 
 class Prices {
   constructor(category, creator, currency = "USD") {
@@ -27,20 +28,14 @@ class Prices {
     }
   }
 
-  async fetchStockPrices(apiKey, asset = "") {
-    const options = {
-      method: "GET",
-      url: "https://yfapi.net/v6/finance/quote?symbols=" + (asset !== "" ? asset : this.assets),
-      headers: {
-        "x-api-key": apiKey,
-      },
-    };
+  async fetchStockPrices(asset = "") {
+    try {
+      const result = await yahooFinance.quote(asset !== "" ? asset : [...this.assets]);
 
-    const prices = await axios
-      .request(options)
-      .then(function (response) {
-        let prices = [];
-        for (let asset of response?.data?.quoteResponse?.result) {
+      let prices = {};
+
+      if (Array.isArray(result)) {
+        for (let asset of result) {
           if (asset) {
             prices[asset.symbol] = {
               price: asset.regularMarketPrice,
@@ -48,13 +43,17 @@ class Prices {
             };
           }
         }
-        return prices;
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
+      } else if (result) {
+        prices[result.symbol] = {
+          price: result.regularMarketPrice,
+          currency: result.currency,
+        };
+      }
 
-    return prices;
+      return prices;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   }
 
   async fetchCommoditiesPrices() {

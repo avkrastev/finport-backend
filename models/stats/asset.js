@@ -1,32 +1,34 @@
-const { exchangeRatesBaseUSD } = require("../../utils/functions");
+const asset = require("../asset");
 
 class AssetStats {
-  constructor(data, totals) {
+  constructor(data, totals, session = null) {
     this.data = data;
     this.totals = totals;
     this.balance = 0;
     this.currentPrices = {};
+    this.session = session;
     this.stats = [];
     this.sums = {};
   }
 
   async getStats() {
-    const exchangeRatesList = await exchangeRatesBaseUSD(0, "", "", true);
+    const exchangeRatesList = this.session.exchangeRates;
 
+    this.balance = 0;
     for (let item of this.data) {
       let stats = {};
       stats.name = item.data[item.data.length - 1].name;
+      stats.currency = item.data[item.data.length - 1].asset_currency;
       stats.symbol = item._id.symbol;
-      stats.currency = this.findCurrency(item.data);
       stats.totalSum =
         stats.currency === "USD"
           ? item.totalSum
-          : item.totalSum * exchangeRatesList[stats.currency];
+          : item.totalSumInOriginalCurrency / exchangeRatesList[stats.currency];
       stats.holdingQuantity = item.totalQuantity;
       stats.currentPrice =
         stats.currency === "USD"
           ? this.currentPrices[stats.symbol].price
-          : this.currentPrices[stats.symbol].price * exchangeRatesList[stats.currency];
+          : this.currentPrices[stats.symbol].price / exchangeRatesList[stats.currency];
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
       stats.holdingValue = stats.currentPrice * stats.holdingQuantity;
       stats.averageNetCost = stats.holdingQuantity > 0 ? stats.totalSum / stats.holdingQuantity : 0;
@@ -34,7 +36,9 @@ class AssetStats {
       stats.differenceInPercents =
         stats.averageNetCost > 0 ? (stats.currentPrice / stats.averageNetCost - 1) * 100 : 0;
       stats.differenceInUSD =
-        stats.currency !== "USD" ? stats.difference / exchangeRatesList[stats.currency] : "";
+        stats.currency !== "USD"
+          ? stats.difference / exchangeRatesList[stats.currency]
+          : stats.difference;
 
       this.balance += stats.holdingValue;
 
@@ -45,14 +49,15 @@ class AssetStats {
   }
 
   async getStatsWithoutCurrentPrices() {
-    const exchangeRatesList = await exchangeRatesBaseUSD(0, "", "", true);
+    const exchangeRatesList = this.session.exchangeRates;
 
     for (let item of this.data) {
       let stats = {};
       stats.name = item.name;
       stats.symbol = item._id.symbol;
       stats.assetId = item._id.assetId;
-      stats.currency = this.findCurrency(item.data);
+      stats.currency = item.data[item.data.length - 1].asset_currency;
+
       stats.holdingQuantity = item.totalQuantity;
       stats.currentPrice = "N/A";
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
@@ -78,14 +83,6 @@ class AssetStats {
     }
 
     this.sortStats();
-  }
-
-  findCurrency(data) {
-    const result = data.filter(
-      (value, index, self) => index === self.findIndex((t) => t.currency === value.currency)
-    );
-
-    return result.length === 1 ? result[0].currency : "USD";
   }
 
   sortStats() {

@@ -18,6 +18,7 @@ const {
   getCryptoPrices,
   getStockPrices,
   getRealEstateAsset,
+  searchForStocks,
 } = require("../controllers/asset");
 const checkAuth = require("../middleware/auth");
 
@@ -75,6 +76,10 @@ router.get("/crypto/prices", (req, res, next) => {
 
 router.get("/stock/prices", (req, res, next) => {
   getStockPrices(req, res, next);
+});
+
+router.get("/autocomplete", (req, res, next) => {
+  searchForStocks(req, res, next);
 });
 
 router.get("/:id", (req, res, next) => {

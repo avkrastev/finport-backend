@@ -1,12 +1,9 @@
-const { exchangeRatesBaseUSD } = require("../../utils/functions");
 const CryptoPrices = require("../prices/crypto");
 const AssetStats = require("./asset");
 
 class CryptoAssetStats extends AssetStats {
-  constructor(data, totals, creator) {
-    super();
-    this.data = data;
-    this.totals = totals;
+  constructor(data, totals, creator, session) {
+    super(data, totals, session);
     this.category = "crypto";
     this.creator = creator;
   }
@@ -17,26 +14,26 @@ class CryptoAssetStats extends AssetStats {
 
     const cryptoPrices = new CryptoPrices(ids, this.creator);
     this.currentPrices = await cryptoPrices.getPricesPerAssets();
-    this.exchangeRatesList = await exchangeRatesBaseUSD(0, "", "", true);
   }
 
   getStats() {
+    const exchangeRatesList = this.session.exchangeRates;
     for (let item of this.data) {
       let stats = {};
       stats.name = item.data[item.data.length - 1].name;
       stats.symbol = item.data[item.data.length - 1].symbol;
       stats.assetId = item._id.assetId;
-      stats.currency = this.findCurrency(item.data);
+      stats.currency = item.data[item.data.length - 1].asset_currency;
       stats.totalSum =
         stats.currency === "USD"
           ? item.totalSum
-          : item.totalSum * this.exchangeRatesList[stats.currency];
+          : item.totalSumInOriginalCurrency / exchangeRatesList[stats.currency];
       stats.totalSumInOriginalCurrency = item.totalSumInOriginalCurrency;
       stats.holdingQuantity = item.totalQuantity;
       stats.currentPrice =
         stats.currency === "USD"
           ? this.currentPrices[stats.assetId].usd
-          : this.currentPrices[stats.assetId].usd * this.exchangeRatesList[stats.currency];
+          : this.currentPrices[stats.assetId].usd / exchangeRatesList[stats.currency];
 
       stats.holdingValue = stats.currentPrice * stats.holdingQuantity;
       stats.averageNetCost = stats.holdingQuantity > 0 ? stats.totalSum / stats.holdingQuantity : 0;
@@ -44,7 +41,7 @@ class CryptoAssetStats extends AssetStats {
       stats.differenceInPercents =
         stats.averageNetCost > 0 ? (stats.currentPrice / stats.averageNetCost - 1) * 100 : 0;
       stats.differenceInUSD =
-        stats.currency !== "USD" ? stats.difference / this.exchangeRatesList[stats.currency] : "";
+        stats.currency !== "USD" ? stats.difference / exchangeRatesList[stats.currency] : "";
       this.balance += stats.holdingValue;
 
       this.stats.push(stats);
