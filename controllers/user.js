@@ -153,8 +153,6 @@ const login = async (req, res, next) => {
       req.session.save((err) => {
         if (err) {
           console.error("❌ Session save error:", err);
-        } else {
-          console.log("✅ Session saved successfully:", req.session);
         }
 
         res.json({

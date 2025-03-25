@@ -41,7 +41,7 @@ class CryptoAssetStats extends AssetStats {
       stats.differenceInPercents =
         stats.averageNetCost > 0 ? (stats.currentPrice / stats.averageNetCost - 1) * 100 : 0;
       stats.differenceInUSD =
-        stats.currency !== "USD" ? stats.difference / exchangeRatesList[stats.currency] : "";
+        stats.currency !== "USD" ? stats.difference / exchangeRatesList[stats.currency] : stats.difference;
       this.balance += stats.holdingValue;
 
       this.stats.push(stats);
